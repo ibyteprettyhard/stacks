@@ -1,0 +1,4 @@
+containers/milemaker/microdir.tar.gz
+containers/rsyslog/server-cert.pem
+containers/rsyslog/server-key.pem
+containers/rsyslog/cfp-ca.pem
