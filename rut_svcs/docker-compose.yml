@@ -85,12 +85,11 @@ services:
     # using latest tag can lead to issues when used with
     # automatic image updaters like watchtower.
     image: ghcr.io/tprasadtp/protonwire:latest
+    env_file: secrets.env
     init: true
     restart: unless-stopped
     environment:
       # Quote this value as server name can contain '#'.
-      PROTONVPN_SERVER: "node-us-165.protonvpn.net"
-      WIREGUARD_PRIVATE_KEY: "oAheqK4IfDp+eyssKx/ZAD5KQoxkRwqjD2hMRAnRp2Y="
       # Set this to 1 to show debug logs for issue forms.
       DEBUG: "0"
       # Set this to 0 to disable kill-switch.
