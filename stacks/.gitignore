@@ -1,1 +1,2 @@
 nginx_proxy_manager/secrets.env
+nginx_proxy_manager/dbsecrets.env
