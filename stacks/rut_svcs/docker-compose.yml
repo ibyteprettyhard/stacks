@@ -1,0 +1,121 @@
+version: "3.2"
+
+services:
+  geoip-updater:
+    image: crazymax/geoip-updater:latest
+    volumes:
+      - "/containers/rut-dm/data/geoip:/data"
+    environment:
+      - TZ=America/Los_Angeles
+      - EDITION_IDS=GeoLite2-City,GeoLite2-Country
+      - DOWNLOAD_PATH=/data
+      - SCHEDULE=0 0 * * 0
+      - LOG_LEVEL=info
+      - LOG_JSON=false
+    restart: always
+
+  rtorrent-rutorrent:
+    image: crazymax/rtorrent-rutorrent:latest
+    network_mode: "service:protonwire"
+    mem_limit: 8G
+    environment:
+      - RT_DHT_PORT=6881
+      - XMLRPC_PORT=8000
+      - RUTORRENT_PORT=8080
+      - WEBDAV_PORT=9001
+      - RT_INC_PORT=51820
+      - TZ=America/Los_Angeles
+      - PUID=1030
+      - PGID=100
+      - WAN_IP_CMD=false
+      - AUTH_DELAY=0s
+      - MEMORY_LIMIT=256M
+      - UPLOAD_MAX_SIZE=16M
+      - OPCACHE_MEM_SIZE=128
+      - MAX_FILE_UPLOADS=50
+      - REAL_IP_FROM=0.0.0.0/32
+      - REAL_IP_HEADER=X-Forwarded-For
+      - LOG_IP_VAR=remote_addr
+      - LOG_ACCESS=true
+      - XMLRPC_AUTHBASIC_STRING=rTorrent XMLRPC restricted access
+      - RUTORRENT_AUTHBASIC_STRING=ruTorrent restricted access
+      - WEBDAV_AUTHBASIC_STRING=WebDAV restricted access
+      - RT_LOG_LEVEL=info
+      - RT_LOG_EXECUTE=false
+      - RT_LOG_XMLRPC=false
+      - RU_REMOVE_CORE_PLUGINS=erasedata,httprpc
+      - RU_HTTP_USER_AGENT=Mozilla/5.0 (Windows NT 6.0; WOW64; rv:12.0) Gecko/20100101 Firefox/12.0
+      - RU_HTTP_TIME_OUT=30
+      - RU_HTTP_USE_GZIP=true
+      - RU_RPC_TIME_OUT=5
+      - RU_LOG_RPC_CALLS=false
+      - RU_LOG_RPC_FAULTS=true
+      - RU_PHP_USE_GZIP=false
+      - RU_PHP_GZIP_LEVEL=2
+      - RU_SCHEDULE_RAND=10
+      - RU_LOG_FILE=/data/rutorrent/rutorrent.log
+      - RU_DO_DIAGNOSTIC=true
+      - RU_SAVE_UPLOADED_TORRENTS=true
+      - RU_OVERWRITE_UPLOADED_TORRENTS=false
+      - RU_FORBID_USER_SETTINGS=false
+      - RU_LOCALE=UTF8
+    volumes:
+      - "/containers/rut-dm/data:/data"
+      - "/mnt/downloads-dm/tomac:/downloads"
+      - "/containers/rut-dm/passwd:/passwd"
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 32000
+        hard: 40000
+    restart: always
+
+  rtorrent-logs:
+    image: bash
+    command: bash -c 'tail -f /log/*.log'
+    depends_on:
+      - rtorrent-rutorrent
+    volumes:
+      - "/containers/rut-dm/data/rtorrent/log:/log"
+    restart: always
+
+  protonwire:
+    container_name: protonwire
+    # Use semver tags or sha256 hashes of manifests.
+    # using latest tag can lead to issues when used with
+    # automatic image updaters like watchtower.
+    image: ghcr.io/tprasadtp/protonwire:latest
+    init: true
+    restart: unless-stopped
+    environment:
+      # Quote this value as server name can contain '#'.
+      PROTONVPN_SERVER: "node-us-165.protonvpn.net"
+      WIREGUARD_PRIVATE_KEY: "oAheqK4IfDp+eyssKx/ZAD5KQoxkRwqjD2hMRAnRp2Y="
+      # Set this to 1 to show debug logs for issue forms.
+      DEBUG: "0"
+      # Set this to 0 to disable kill-switch.
+      KILL_SWITCH: "1"
+    # NET_ADMIN capability is mandatory!
+    cap_add:
+      - NET_ADMIN
+    # sysctl net.ipv4.conf.all.rp_filter is mandatory!
+    # net.ipv6.conf.all.disable_ipv6 disables IPv6 as protonVPN does not support IPv6.
+    # 'net.*' sysctls are not required on application containers,
+    # as they share network stack with protonwire container.
+    sysctls:
+      net.ipv4.conf.all.rp_filter: 2
+      net.ipv6.conf.all.disable_ipv6: 1
+    volumes:
+      - type: tmpfs
+        target: /tmp
+      #- type: bind
+      #  source: private.key
+      #  target: /etc/protonwire/private-key
+      #  read_only: true
+    ports:
+      - 8000:8000
+      - 6881:6881/udp
+      - 8080:8080
+      - 9001:9001
+      - 51820:51820
+

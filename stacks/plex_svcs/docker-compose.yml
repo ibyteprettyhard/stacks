@@ -1,9 +1,17 @@
 ---
 version: "3.8"
 services:
-  jackett:
+  threadfin-dm:
+    image: fyb3roptik/threadfin
+    container_name: threadfin-dm
+    environment:
+      - TZ=America/Los_Angeles
+    ports:
+      - 34400:34400
+    restart: unless-stopped
+  jackett-dm:
     image: linuxserver/jackett
-    container_name: jackett
+    container_name: jackett-dm
     environment:
       - TZ=America/Los_Angeles
     volumes:
@@ -88,12 +96,44 @@ services:
       - "8181:8181"
     restart: unless-stopped
 
+  tdarr:
+    container_name: tdarr
+    image: ghcr.io/haveagitgat/tdarr:latest
+    restart: unless-stopped
+    network_mode: bridge
+    ports:
+      - 8265:8265 # webUI port
+      - 8266:8266 # server port
+      - 8267:8267 # Internal node port
+      - 8268:8268 # Example extra node port
+    environment:
+      - TZ=America/Los_Angeles
+      - PUID=1027
+      - PGID=100
+      - UMASK_SET=002
+      - serverIP=0.0.0.0
+      - serverPort=8266
+      - webUIPort=8265
+      - internalNode=true
+      - nodeID=MyInternalNode
+    volumes:
+      - /containers/tdarr/server:/app/server
+      - /containers/tdarr/configs:/app/configs
+      - /containers/tdarr/logs:/app/logs
+      - movies-rw:/media
+      - /tmp:/temp
+
 networks:
   default:
     external: true
-    name: plex_supsvcs_bridge
+    name: plex_svcs_dm_bridge
 
 volumes:
+  jackett:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.10.30.30,nolock,soft,rw"
+      device: ":/mnt/Jail_Storage/Docker_Persist/jackett-dm"
   downloads-ro:
     driver_opts:
       type: "nfs"
@@ -114,12 +154,12 @@ volumes:
       type: "nfs"
       o: "addr=10.10.30.30,nolock,soft,rw"
       device: ":/mnt/DM_Media_Pool/TV"
- #plexlogs-dm:
- #    driver_opts:
- #    type: "nfs"
- #     o: "addr=10.10.30.5,nolock,soft,ro"
- #     device: ":/containers/plex-dm/db/Library/Application Support/Plex Media Server/Logs"
-  ombi-dm:
+  plexlogs:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.10.30.5,nolock,soft,ro"
+      device: ":/containers/plex-dm/db/Library/Application Support/Plex Media Server/Logs"
+  ombi:
     driver_opts:
       type: "nfs"
       o: "addr=10.10.30.30,nolock,soft,rw"
@@ -129,6 +169,16 @@ volumes:
       type: "nfs"
       o: "addr=10.10.30.30,nolock,soft,rw"
       device: ":/mnt/Jail_Storage/Docker_Persist/ombi-mu"
+  radarr:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.10.30.30,nolock,soft,rw"
+      device: ":/mnt/Jail_Storage/Docker_Persist/radarr-dm"
+  sonarr:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.10.30.30,nolock,soft,rw"
+      device: ":/mnt/Jail_Storage/Docker_Persist/sonarr-dm"
   tautulli:
     driver_opts:
       type: "nfs"

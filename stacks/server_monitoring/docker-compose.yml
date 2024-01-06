@@ -1,0 +1,148 @@
+---
+version: '3'
+
+volumes:
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
+
+services:
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - /containers/prometheus/etc:/etc/prometheus
+      - prometheus-data:/prometheus
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+    
+  varken:
+    container_name: varken
+    image: boerderij/varken
+    volumes:
+      - /containers/varken/config-folder:/config
+    environment:
+      - DEBUG=True
+      - TZ=America/Los_Angeles
+      - VRKN_GLOBAL_SONARR_SERVER_IDS=1
+      - VRKN_GLOBAL_RADARR_SERVER_IDS=1
+      - VRKN_GLOBAL_LIDARR_SERVER_IDS=false
+      - VRKN_GLOBAL_TAUTULLI_SERVER_IDS=1
+      - VRKN_GLOBAL_OMBI_SERVER_IDS=1
+      - VRKN_GLOBAL_SICKCHILL_SERVER_IDS=false
+      - VRKN_GLOBAL_UNIFI_SERVER_IDS=false
+      - VRKN_GLOBAL_MAXMIND_LICENSE_KEY=OaovaCKfeFoDAjqr
+      - VRKN_INFLUXDB_URL=influxdb
+      - VRKN_INFLUXDB_PORT=8086
+      - VRKN_INFLUXDB_SSL=false
+      - VRKN_INFLUXDB_VERIFY_SSL=false
+      - VRKN_INFLUXDB_USERNAME=admin
+      - VRKN_INFLUXDB_PASSWORD=keyboard.grenada.toilworn.wale.fete
+      - VRKN_TAUTULLI_1_URL=tautulli-dm:8181/adm/tautulli
+      - VRKN_TAUTULLI_1_FALLBACK_IP=1.1.1.1
+      - VRKN_TAUTULLI_1_APIKEY=5eafc75335d14eccaf27652fa472c61e
+      - VRKN_TAUTULLI_1_SSL=false
+      - VRKN_TAUTULLI_1_VERIFY_SSL=false
+      - VRKN_TAUTULLI_1_GET_ACTIVITY=true
+      - VRKN_TAUTULLI_1_GET_ACTIVITY_RUN_SECONDS=30
+      - VRKN_TAUTULLI_1_GET_STATS=true
+      - VRKN_TAUTULLI_1_GET_STATS_RUN_SECONDS=3600
+      - VRKN_SONARR_1_URL=sonarr-dm:8989
+      - VRKN_SONARR_1_APIKEY=d38be782d14c4056b0836aaf1f2590e7
+      - VRKN_SONARR_1_SSL=false
+      - VRKN_SONARR_1_VERIFY_SSL=false
+      - VRKN_SONARR_1_MISSING_DAYS=7
+      - VRKN_SONARR_1_MISSING_DAYS_RUN_SECONDS=300
+      - VRKN_SONARR_1_FUTURE_DAYS=1
+      - VRKN_SONARR_1_FUTURE_DAYS_RUN_SECONDS=300
+      - VRKN_SONARR_1_QUEUE=true
+      - VRKN_SONARR_1_QUEUE_RUN_SECONDS=300
+      - VRKN_RADARR_1_URL=radarr-dm:7878/adm/radarr
+      - VRKN_RADARR_1_APIKEY=76d37f13ff6e4fa989ce236689723113
+      - VRKN_RADARR_1_SSL=false
+      - VRKN_RADARR_1_VERIFY_SSL=false
+      - VRKN_RADARR_1_QUEUE=true
+      - VRKN_RADARR_1_QUEUE_RUN_SECONDS=300
+      - VRKN_RADARR_1_GET_MISSING=true
+      - VRKN_RADARR_1_GET_MISSING_RUN_SECONDS=300
+      - VRKN_OMBI_1_URL=ombi-dm:3579
+      - VRKN_OMBI_1_APIKEY=a7530617cad84bd5acbe32720ba8fb85
+      - VRKN_OMBI_1_SSL=false
+      - VRKN_OMBI_1_VERIFY_SSL=false
+      - VRKN_OMBI_1_GET_REQUEST_TYPE_COUNTS=true
+      - VRKN_OMBI_1_REQUEST_TYPE_RUN_SECONDS=300
+      - VRKN_OMBI_1_GET_REQUEST_TOTAL_COUNTS=true
+      - VRKN_OMBI_1_REQUEST_TOTAL_RUN_SECONDS=300
+      - VRKN_OMBI_1_GET_ISSUE_STATUS_COUNTS=true
+      - VRKN_OMBI_1_ISSUE_STATUS_RUN_SECONDS=300
+    restart: unless-stopped
+    networks:
+      - plex_svcs_dm_bridge
+      - server_monitoring_bridge
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+    environment:
+      - GF_SERVER_ROOT_URL=http://grafana:3000/adm/grafana
+    networks:
+      - plex_svcs_dm_bridge
+      - server_monitoring_bridge
+    
+  node_exporter:
+    image: quay.io/prometheus/node-exporter:latest
+    container_name: node_exporter
+    command:
+      - '--path.rootfs=/host'
+
+    pid: host
+    restart: unless-stopped
+    volumes:
+      - '/:/host:ro,rslave'
+      
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+      - "8282:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:rw
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    command:
+
+      - "--housekeeping_interval=30s"
+      - "--docker_only=true"
+      
+  influxdb:
+    hostname: influxdb
+    container_name: influxdb
+    image: influxdb:1.8
+    ports:
+      - "2003:2003"
+      - "8086:8086"
+    restart: unless-stopped
+    
+networks:
+  default:
+    external: true
+    name: server_monitoring_bridge
+  plex_svcs_dm_bridge:
+    external: true
+
+  server_monitoring_bridge:
+    external: true
+
