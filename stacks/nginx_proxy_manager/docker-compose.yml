@@ -8,7 +8,7 @@ services:
       # These ports are in format <host-port>:<container-port>
       - '80:80' # Public HTTP Port
       - '443:443' # Public HTTPS Port
-      - '8282:81' # Admin Web Port
+      - '8585:81' # Admin Web Port
       # Add any other Stream port you want to expose
       # - '21:21' # FTP
     environment:
@@ -18,8 +18,8 @@ services:
       # Uncomment this if IPv6 is not enabled on your host
       # DISABLE_IPV6: 'true'
     volumes:
-      - npm-data/data data:/data
-      - npm-data/letsencrypt:/etc/letsencrypt
+      - npm-data:/data
+      - npm-letsencrypt:/etc/letsencrypt
     depends_on:
       - db
 
@@ -32,4 +32,5 @@ services:
 
 volumes:
   npm-data:
+  npm-letsencrypt:
   npm-db:
