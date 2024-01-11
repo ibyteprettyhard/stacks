@@ -2,6 +2,7 @@
 version: "3.3"
 services:
   mysql:
+    container_name: semaphore-mysql
     restart: unless-stopped
     image: mysql:8.0
     hostname: mysql
@@ -9,9 +10,10 @@ services:
       - semaphore-mysql:/var/lib/mysql
     env_file: mysql.env
   semaphore:
+    container_name: semsphore
     restart: unless-stopped
     ports:
-      - 3000:3000
+      - 3001:3000
     image: semaphoreui/semaphore:latest
     env_file: semaphore.env
     depends_on:
@@ -59,4 +61,4 @@ networks:
 
 volumes:
   letsencrypt-data:
-  semaphore-data:
+  semaphore-mysql:
