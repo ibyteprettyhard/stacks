@@ -1,6 +1,21 @@
 ---
 version: "3.3"
 services:
+  mysql:
+    restart: unless-stopped
+    image: mysql:8.0
+    hostname: mysql
+    volumes:
+      - semaphore-mysql:/var/lib/mysql
+    env_file: mysql.env
+  semaphore:
+    restart: unless-stopped
+    ports:
+      - 3000:3000
+    image: semaphoreui/semaphore:latest
+    env_file: semaphore.env
+    depends_on:
+      - mysql # for postgres, change to: postgres 
   swag:
     image: linuxserver/swag
     container_name: swag
@@ -8,11 +23,10 @@ services:
       - 443:443
       - 80:80
     networks:
-      - system_svcs_bridge
-      - plex_svcs_dm_bridge
-      - vBridge
+      - portainer_default
+      - plex_svcs_bridge
     volumes:
-      - letsencrypt:/config
+      - letsencrypt-data:/config
     restart: always
     environment:
       - EMAIL=
@@ -20,27 +34,12 @@ services:
       - SUBDOMAINS=www,request,
       - TZ=America/Los_Angeles
       - EXTRA_DOMAINS=uppyflix.tv
-  smtp:
-    container_name: smtp_relay
-    image: namshi/smtp
-    environment:
-      - DISABLE_IPV6
-      - RELAY_NETWORKS=:10.10.10.0/24
-      - RELAY_NETWORKS=:172.16.0.0/24
-    ports:
-      - "25:25"
-    networks:
-      - system_svcs_bridge
-      - vBridge
-      - plex_svcs_dm_bridge
-      - rut-svcs-dm_default
-
   ouroboros:
     container_name: ouroboros
     hostname: ouroboros
     image: pyouroboros/ouroboros
     networks:
-      - system_svcs_bridge
+      - plex_svcs_bridge
     environment:
       - CLEANUP=true
       - INTERVAL=21600
@@ -53,19 +52,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock  
 
 networks:
-  system_svcs_bridge:
+  plex_svcs_bridge:
     external: true
-  vBridge:
-    external: true
-  plex_svcs_dm_bridge:
-    external: true
-  rut-svcs-dm_default:
+  portainer_default:
     external: true
 
 volumes:
-  letsencrypt:
-    driver_opts:
-      type: "nfs"
-      o: "addr=10.10.30.30,nolock,soft,rw"
-      device: ":/mnt/Jail_Storage/Docker_Persist/letsencrypt"
-
+  letsencrypt-data:
+  semaphore-data:
