@@ -4,3 +4,5 @@ nginx_proxy_manager/secrets.env
 rut_svcs/secrets.env
 system_svcs/mysql.env
 system_svcs/semaphore.env
+torrent_svcs/protonwire.env
+system_monitoring/varken.env
