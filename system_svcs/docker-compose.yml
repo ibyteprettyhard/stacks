@@ -47,7 +47,7 @@ services:
     hostname: ouroboros
     image: pyouroboros/ouroboros
     networks:
-      - plex_svcs_bridge
+      - system_svcs_bridge
     environment:
       - CLEANUP=true
       - INTERVAL=21600
