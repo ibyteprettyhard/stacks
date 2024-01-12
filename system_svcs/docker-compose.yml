@@ -27,6 +27,8 @@ services:
     networks:
       - portainer_default
       - plex_svcs_bridge
+      - system_monitoring_default
+      - torrent_svcs_default
     volumes:
       - letsencrypt-data:/config
     restart: always
