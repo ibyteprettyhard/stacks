@@ -10,7 +10,7 @@ services:
       - semaphore-mysql:/var/lib/mysql
     env_file: mysql.env
   semaphore:
-    container_name: semsphore
+    container_name: semaphore
     restart: unless-stopped
     ports:
       - 3001:3000
