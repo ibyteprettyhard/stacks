@@ -1,28 +1,20 @@
 ---
 version: "3.8"
 services:
-  threadfin-dm:
-    image: fyb3roptik/threadfin
-    container_name: threadfin-dm
-    environment:
-      - TZ=America/Los_Angeles
-    ports:
-      - 34400:34400
-    restart: unless-stopped
   jackett-dm:
     image: linuxserver/jackett
-    container_name: jackett-dm
+    container_name: jackett
     environment:
       - TZ=America/Los_Angeles
     volumes:
-      - jackett:/config
+      - jackett-data:/config
       - downloads-ro:/downloads
     ports:
       - 9117:9117
     restart: unless-stopped
   flaresolverr:
     image: ghcr.io/flaresolverr/flaresolverr:latest
-    container_name: flaresolverr-dm
+    container_name: flaresolverr
     environment:
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - LOG_HTML=${LOG_HTML:-false}
@@ -37,7 +29,7 @@ services:
     environment:
       - TZ=America/Los_Angeles
     volumes:
-      - ombi:/config
+      - ombi-dm-data:/config
     ports:
       - 3579
     restart: unless-stopped
@@ -48,20 +40,21 @@ services:
       - TZ=America/Los_Angeles
       - BASE_URL=/ombi
     volumes:
-      - ombi-mu:/config
+      - ombi-mu-data:/config
     ports:
       - 3579
     restart: unless-stopped
+    
   radarr-dm:
     image: linuxserver/radarr:nightly
-    container_name: radarr-dm
+    container_name: radarr
     mem_limit: 6G
     environment:
       - PUID=1027
       - PGID=100
       - TZ=America/Los_Angeles
     volumes:
-      - radarr:/config
+      - radarr-data:/config
       - movies-rw:/movies
       - downloads-rw:/downloads
     ports:
@@ -69,14 +62,14 @@ services:
     restart: unless-stopped
   sonarr:
     image: ghcr.io/linuxserver/sonarr
-    container_name: sonarr-dm
+    container_name: sonarr
     mem_limit: 6G
     environment:
       - PUID=1026
       - PGID=100
       - TZ=America/Los_Angeles
     volumes:
-      - sonarr:/config
+      - sonarr-data:/config
       - tv-rw:/tv
       - downloads-rw:/downloads
     ports:
@@ -90,98 +83,46 @@ services:
       - PGID=991
       - TZ=America/Los_Angeles
     volumes:
-      - tautulli:/config
+      - tautulli-dm-data:/config
       - plexlogs:/plex_logs:ro
     ports:
       - "8181:8181"
     restart: unless-stopped
-
-  tdarr:
-    container_name: tdarr
-    image: ghcr.io/haveagitgat/tdarr:latest
-    restart: unless-stopped
-    network_mode: bridge
-    ports:
-      - 8265:8265 # webUI port
-      - 8266:8266 # server port
-      - 8267:8267 # Internal node port
-      - 8268:8268 # Example extra node port
-    environment:
-      - TZ=America/Los_Angeles
-      - PUID=1027
-      - PGID=100
-      - UMASK_SET=002
-      - serverIP=0.0.0.0
-      - serverPort=8266
-      - webUIPort=8265
-      - internalNode=true
-      - nodeID=MyInternalNode
-    volumes:
-      - /containers/tdarr/server:/app/server
-      - /containers/tdarr/configs:/app/configs
-      - /containers/tdarr/logs:/app/logs
-      - movies-rw:/media
-      - /tmp:/temp
-
+ 
 networks:
   default:
-    external: true
-    name: plex_svcs_dm_bridge
+    external: false
+    name: plex_svcs_bridge
 
 volumes:
-  jackett:
-    driver_opts:
-      type: "nfs"
-      o: "addr=10.10.30.30,nolock,soft,rw"
-      device: ":/mnt/Jail_Storage/Docker_Persist/jackett-dm"
+  jackett-data:
+  tautulli-dm-data:
+  ombi-dm-data:
+  ombi-mu-data:
+  radarr-data:
+  sonarr-data:
   downloads-ro:
     driver_opts:
       type: "nfs"
-      o: "addr=10.10.30.30,nolock,soft,ro"
+      o: "addr=10.10.30.100,nolock,soft,ro"
       device: ":/mnt/Seed_Data_Pool/DM/tomac"
-  downloads-rw:
-    driver_opts:
-      type: "nfs"
-      o: "addr=10.10.30.30,nolock,soft,rw"
-      device: ":/mnt/Seed_Data_Pool/DM/tomac"
-  movies-rw:
-    driver_opts:
-      type: "nfs"
-      o: "addr=10.10.30.30,nolock,soft,rw"
-      device: ":/mnt/MU_Media_pool/Movies"
   tv-rw:
     driver_opts:
       type: "nfs"
-      o: "addr=10.10.30.30,nolock,soft,rw"
+      o: "addr=10.10.30.100,nolock,soft,rw"
       device: ":/mnt/DM_Media_Pool/TV"
+  movies-rw:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.10.30.100,nolock,soft,rw"
+      device: ":/mnt/MU_Media_pool/Movies"
+  downloads-rw:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.10.30.100,nolock,soft,rw"
+      device: ":/mnt/Seed_Data_Pool/DM/tomac"
   plexlogs:
     driver_opts:
       type: "nfs"
       o: "addr=10.10.30.5,nolock,soft,ro"
       device: ":/containers/plex-dm/db/Library/Application Support/Plex Media Server/Logs"
-  ombi:
-    driver_opts:
-      type: "nfs"
-      o: "addr=10.10.30.30,nolock,soft,rw"
-      device: ":/mnt/Jail_Storage/Docker_Persist/ombi-dm"
-  ombi-mu:
-    driver_opts:
-      type: "nfs"
-      o: "addr=10.10.30.30,nolock,soft,rw"
-      device: ":/mnt/Jail_Storage/Docker_Persist/ombi-mu"
-  radarr:
-    driver_opts:
-      type: "nfs"
-      o: "addr=10.10.30.30,nolock,soft,rw"
-      device: ":/mnt/Jail_Storage/Docker_Persist/radarr-dm"
-  sonarr:
-    driver_opts:
-      type: "nfs"
-      o: "addr=10.10.30.30,nolock,soft,rw"
-      device: ":/mnt/Jail_Storage/Docker_Persist/sonarr-dm"
-  tautulli:
-    driver_opts:
-      type: "nfs"
-      o: "addr=10.10.30.30,nolock,soft,rw"
-      device: ":/mnt/Jail_Storage/Docker_Persist/tautulli-dm"
-
