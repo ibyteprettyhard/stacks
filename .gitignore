@@ -2,3 +2,5 @@ nginx_proxy_manager/dbsecrets.env
 nginx_proxy_manager/test.env
 nginx_proxy_manager/secrets.env
 rut_svcs/secrets.env
+system_svcs/mysql.env
+system_svcs/semaphore.env
