@@ -1,0 +1,74 @@
+version: "3.2"
+
+services:
+  geoip-updater:
+    image: crazymax/geoip-updater:latest
+    volumes:
+      - "/containers/rut-dm/data/geoip:/data"
+    environment:
+      - TZ=America/Los_Angeles
+      - EDITION_IDS=GeoLite2-City,GeoLite2-Country
+      - DOWNLOAD_PATH=/data
+      - SCHEDULE=0 0 * * 0
+      - LOG_LEVEL=info
+      - LOG_JSON=false
+    restart: always
+
+  rtorrent-rutorrent:
+    image: crazymax/rtorrent-rutorrent:latest
+    env_file: rtorrent-rutorrent.env
+    network_mode: "service:protonwire"
+    mem_limit: 8G
+    volumes:
+      - rutorrent-data:/data
+      - downloads-rw:/downloads
+      - rutorrent-passwd:/passwd
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 32000
+        hard: 40000
+    restart: always
+
+  rtorrent-logs:
+    image: bash
+    command: bash -c 'tail -f /log/*.log'
+    depends_on:
+      - rtorrent-rutorrent
+    volumes:
+      - rtorrent-logs-data:/log
+    restart: always
+
+  protonwire:
+    container_name: protonwire
+    image: ghcr.io/tprasadtp/protonwire:latest
+    env_file: protonwire.env
+    init: true
+    restart: unless-stopped
+    environment:
+      DEBUG: "0"
+      KILL_SWITCH: "1"
+    cap_add:
+      - NET_ADMIN
+    sysctls:
+      net.ipv4.conf.all.rp_filter: 2
+      net.ipv6.conf.all.disable_ipv6: 1
+    volumes:
+      - type: tmpfs
+        target: /tmp
+    ports:
+      - 8000:8000
+      - 6881:6881/udp
+      - 8080:8080
+      - 9001:9001
+      - 51820:51820
+
+volumes:
+  rtorrent-logs-data:
+  rutorrent-data:
+  rutorrent-passwd:
+  downloads-rw:
+    driver_opts:
+      type: "nfs"
+      o: "addr=10.10.30.100,nolock,soft,rw"
+      device: ":/mnt/Seed_Data_Pool/DM/tomac"
