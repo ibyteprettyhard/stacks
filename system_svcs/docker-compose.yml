@@ -25,10 +25,10 @@ services:
       - 443:443
       - 80:80
     networks:
-      - portainer_bridge
+      - portainer_default
       - plex_svcs_bridge
       - system_monitoring_bridge
-      - torrent_svcs_default
+      - torrent_svcs_bridge
     volumes:
       - letsencrypt-data:/config
     restart: always
