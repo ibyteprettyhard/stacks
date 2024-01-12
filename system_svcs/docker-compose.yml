@@ -4,6 +4,8 @@ services:
   mysql:
     container_name: semaphore-mysql
     restart: unless-stopped
+    networks:
+      - system_svcs_bridge
     image: mysql:8.0
     hostname: mysql
     volumes:
@@ -12,6 +14,8 @@ services:
   semaphore:
     container_name: semaphore
     restart: unless-stopped
+    networks:
+      - system_svcs_bridge
     ports:
       - 3001:3000
     image: semaphoreui/semaphore:latest
