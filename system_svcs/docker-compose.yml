@@ -25,9 +25,9 @@ services:
       - 443:443
       - 80:80
     networks:
-      - portainer_default
+      - portainer_bridge
       - plex_svcs_bridge
-      - system_monitoring_default
+      - system_monitoring_bridge
       - torrent_svcs_default
     volumes:
       - letsencrypt-data:/config
@@ -59,6 +59,10 @@ networks:
   plex_svcs_bridge:
     external: true
   portainer_default:
+    external: true
+  system_monitoring_bridge:
+    external: true
+  torrent_svcs_bridge:
     external: true
 
 volumes:
