@@ -60,7 +60,7 @@ networks:
     external: true
   system_monitoring_default:
     external: true
-  torrent_svcs_bridge:
+  torrent_svcs_default:
     external: true
 
 volumes:
