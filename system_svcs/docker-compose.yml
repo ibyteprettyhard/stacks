@@ -29,15 +29,11 @@ services:
       - plex_svcs_bridge
       - system_monitoring_default
       - torrent_svcs_default
+      - stirlingpdf_default
     volumes:
       - letsencrypt-data:/config
     restart: always
-    environment:
-      - EMAIL=
-      - URL=derekflix.tv
-      - SUBDOMAINS=www,request,
-      - TZ=America/Los_Angeles
-      - EXTRA_DOMAINS=uppyflix.tv
+    env_file: swag.env
   ouroboros:
     container_name: ouroboros
     hostname: ouroboros
