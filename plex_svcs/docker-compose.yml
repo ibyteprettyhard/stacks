@@ -84,7 +84,7 @@ services:
       - TZ=America/Los_Angeles
     volumes:
       - tautulli-dm-data:/config
-      - plexlogs:/plex_logs:ro
+      - /var/lib/docker/volumes/plex_servers_plex-dm-config/_data/Library/Application Support/Plex Media Server/Logs:/plex_logs:ro
     ports:
       - "8181:8181"
     restart: unless-stopped
@@ -121,8 +121,3 @@ volumes:
       type: "nfs"
       o: "addr=10.10.30.100,nolock,soft,rw"
       device: ":/mnt/Seed_Data_Pool/DM/tomac"
-  plexlogs:
-    driver_opts:
-      type: "nfs"
-      o: "addr=10.10.30.5,nolock,soft,ro"
-      device: ":/containers/plex-dm/db/Library/Application Support/Plex Media Server/Logs"
