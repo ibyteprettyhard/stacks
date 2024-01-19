@@ -9,3 +9,5 @@ torrent_svcs/protonwire.env
 system_monitoring/varken.env
 torrent_svcs/protonwire.env
 torrent_svcs/rtorrent-rutorrent.env
+paperless-ngx/paperless_db.env
+paperless-ngx/paperless_webserver.env
