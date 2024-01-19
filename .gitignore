@@ -1,0 +1,11 @@
+nginx_proxy_manager/dbsecrets.env
+nginx_proxy_manager/test.env
+nginx_proxy_manager/secrets.env
+rut_svcs/secrets.env
+system_svcs/mysql.env
+system_svcs/semaphore.env
+system_svcs/swag.env
+torrent_svcs/protonwire.env
+system_monitoring/varken.env
+torrent_svcs/protonwire.env
+torrent_svcs/rtorrent-rutorrent.env
