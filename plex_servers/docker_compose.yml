@@ -10,7 +10,7 @@ services:
       - TZ=America/Los_Angeles
     volumes:
       - plex-dm-config:/config
-      - /tmp:/transcode
+      - /transcode:/transcode
       - tv-ro:/data/TV
       - movies-ro:/data/Movies
     ports:
@@ -28,7 +28,7 @@ services:
       - TZ=America/Los_Angeles
     volumes:
       - plex-mu-config:/config
-      - /tmp:/transcode
+      - /transcode:/transcode
       - tv-ro:/data/TV
       - movies-ro:/data/Movies
     ports:

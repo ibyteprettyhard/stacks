@@ -17,6 +17,10 @@ system:
     installBookFormats: false # Installs Calibre for book format conversion (For non docker it must be manually downloaded but will need to be true to show in UI)
     installAdvancedHtmlToPDF: false # DO NOT USE EXTERNALLY, NOT SAFE! Install wkHtmlToPDF (For non docker it must be manually downloaded but will need to be true to show in UI)
 
+#ui:
+#  appName: exampleAppName # Application's visible name
+#  homeDescription: I am a description # Short description or tagline shown on homepage.
+#  appNameNavbar: navbarName # Name displayed on the navigation bar
 
 endpoints:
   toRemove: [] # List endpoints to disable (e.g. ['img-to-pdf', 'remove-pages'])
